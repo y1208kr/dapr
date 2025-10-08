@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>의사결정분석: 실제와 미래 (Decision Analysis: Practice and Promise)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Professional Blue & Gray -->
+    <!-- Application Structure Plan: The application is structured as a horizontal, slide-based presentation, ideal for a guided, step-by-step academic talk. Navigation is supported by arrow buttons, keyboard controls, and a new left-side hyperlink navigation for direct access to key sections (Intro, Process, Key Concepts, etc.). This hybrid structure combines linear flow with non-linear exploration. -->
+    <!-- Visualization & Content Choices: The content from the "Decision Analysis" paper is structured visually. The core DA process is shown as a flow diagram. The Decision Basis components are broken down into a 3-part visual model. The Strategy Generation Table and Corporate Risk Tolerance tables are recreated as clean HTML tables to present data clearly. The distinction between descriptive and normative models, and expert vs. intelligent systems, are shown using comparison layouts. This visual, structured approach makes Howard's dense, conceptual paper more accessible and digestible. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #334155; /* slate-700 */
+            word-break: keep-all;
+        }
+
+        .main-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            background-color: #ffffff;
+            border-right: 1px solid #e2e8f0; /* slate-200 */
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-title {
+            font-weight: 900;
+            color: #1e29b; /* slate-800 */
+            margin-bottom: 2rem;
+            line-height: 1.4;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            color: #475569; /* slate-600 */
+            transition: all 0.2s ease-in-out;
+            border-left: 4px solid transparent;
+        }
+        .sidebar-nav a:hover {
+            background-color: #f1f5f9; /* slate-100 */
+            color: #0f172a; /* slate-900 */
+        }
+        .sidebar-nav a.active {
+            background-color: #eef2ff; /* indigo-50 */
+            color: #3730a3; /* indigo-800 */
+            border-left-color: #4338ca; /* indigo-700 */
+        }
+
+        .content-area {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+        }
+
+        .slider-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .slide {
+            width: 100%;
+            height: 100%;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 4rem;
+            position: relative;
+        }
+        
+        .slide.active .slide-content {
+            animation: fadeIn 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .slide-content {
+            opacity: 0;
+            width: 100%;
+            max-width: 1200px;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.25);
+            color: white;
+            border-radius: 9999px;
+            width: 3.5rem;
+            height: 3.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 20;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .nav-button:hover {
+            background-color: rgba(0, 0, 0, 0.4);
+            transform: translateY(-50%) scale(1.1);
+        }
+        #prev-btn { left: 1.5rem; }
+        #next-btn { right: 1.5rem; }
+        
+        .section-title {
+            font-weight: 900;
+            color: #1e3a8a; /* blue-800 */
+        }
+        .highlight {
+            color: #3730a3; /* indigo-800 */
+            font-weight: 700;
+        }
+        .process-arrow {
+            color: #94a3b8; /* slate-400 */
+            font-size: 2.5rem;
+            line-height: 1;
+        }
+        .critical-view {
+            background-color: #fffbeb; /* amber-50 */
+            border-left: 5px solid #f59e0b; /* amber-500 */
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+        .progress-indicator {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 10;
+        }
+        .progress-bar-container {
+             width: 12rem;
+             height: 8px;
+             background-color: rgba(0, 0, 0, 0.1);
+             border-radius: 4px;
+             overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #4338ca; /* indigo-700 */
+            border-radius: 4px;
+            transition: width 0.5s ease-in-out;
+        }
+        .slide-number {
+            font-size: 0.875rem;
+            color: #475569; /* slate-600 */
+            font-weight: 600;
+            min-width: 50px;
+        }
+        .explanation-box {
+            background-color: #f0f9ff; /* sky-50 */
+            border-left: 4px solid #0ea5e9; /* sky-500 */
+            padding: 1rem;
+            border-radius: 0.25rem;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.07);
+            transition: all 0.3s ease-in-out;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <aside class="sidebar">
+            <h1 class="sidebar-title text-xl">의사결정분석:<br>실제와 미래</h1>
+            <nav id="sidebar-nav" class="sidebar-nav space-y-2 mt-auto">
+                <!-- Sidebar links injected by JS -->
+            </nav>
+        </aside>
+
+        <main class="content-area">
+            <div id="slider-container" class="slider-container">
+                
+                <!-- Slide 1: Title -->
+                <div class="slide active" data-title="시작">
+                    <div class="slide-content text-center">
+                        <h1 class="text-5xl md:text-6xl font-black text-slate-900 leading-tight">의사결정분석: 실제와 미래</h1>
+                        <p class="mt-4 text-2xl md:text-3xl text-slate-600">Decision Analysis: Practice and Promise</p>
+                        <div class="mt-12 border-t pt-8 max-w-lg mx-auto">
+                            <p class="text-lg text-slate-500">Ronald A. Howard (1988) 논문 발표</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 2: Introduction -->
+                <div class="slide" data-title="서론">
+                    <div class="slide-content">
+                        <h2 class="section-title text-4xl mb-8">서론: 의사결정분석의 현주소와 문제 제기</h2>
+                        <div class="grid md:grid-cols-2 gap-8 text-lg">
+                            <div class="card p-8">
+                                <h3 class="text-2xl font-bold text-slate-800 mb-4">의사결정분석의 본질</h3>
+                                <ul class="list-disc list-outside pl-5 space-y-3">
+                                    <li>수백 년간의 철학적, 실용적 사고에 기반한 학문임.</li>
+                                    <li><blockquote class="border-l-4 border-slate-300 pl-4 italic text-slate-600">"<span class="highlight">불투명한(Opaque)</span> 의사결정 문제를 일련의 <span class="highlight">투명한(Transparent)</span> 단계를 통해 투명한 문제로 전환하는 체계적 절차"</li></blockquote>
+                                    <li>목표: 혼란을 명확한 통찰로 대체하여, 의사결정자가 행동에 나서도록 함.</li>
+                                </ul>
+                            </div>
+                             <div class="card p-8">
+                                <h3 class="text-2xl font-bold text-slate-800 mb-4">핵심 문제 제기</h3>
+                                 <ul class="list-disc list-outside pl-5 space-y-3">
+                                      <li>DA의 잠재력에도 불구하고, 왜 중요한 결정에서조차 보편적으로 사용되지 않는가?</li>
+                                      <li>John Maynard Keynes(1964) 인용: "대부분의 긍정적 결정은 정량적 분석의 결과가 아니라, <span class="highlight">자발적 행동 충동인 '야성적 충동(animal spirits)'의 결과</span>로만 내려질 수 있다."</li>
+                                 </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 3: Research Methodology -->
+                <div class="slide" data-title="서론">
+                    <div class="slide-content">
+                        <h2 class="section-title text-4xl mb-8">연구 방법론 및 관점</h2>
+                        <div class="card p-10">
+                            <h3 class="text-2xl font-bold text-slate-800 mb-4 text-center">개념적 검토 및 설득적 논증</h3>
+                            <p class="text-center text-slate-600">본 논문은 특정 데이터를 분석하는 실증 연구가 아닌, 의사결정분석 분야의 핵심 개념, 실천적 과제, 미래 방향을 제시하는 <span class="highlight">개념적 검토(Conceptual Review)</span> 논문임.</p>
+                            <div class="mt-8">
+                                <h4 class="font-bold text-lg text-slate-700">Howard의 핵심 주장</h4>
+                                <ul class="list-decimal list-outside pl-5 space-y-2 mt-2">
+                                    <li>의사결정의 질은 직관이 아닌 <span class="highlight">규범적(Normative) 논리</span>를 통해 향상될 수 있음.</li>
+                                    <li>의사결정분석의 보급을 막는 장벽은 <span class="highlight">개념, 범위, 기술, 효율성</span>의 문제이며, 이는 극복 가능함.</li>
+                                    <li><span class="highlight">지능형 의사결정 시스템(IDS)</span>은 의사결정분석의 대중화를 이끌 미래의 핵심임.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 4: Theoretical Background -->
+                <div class="slide" data-title="이론적 배경">
+                    <div class="slide-content">
+                        <h2 class="section-title text-4xl mb-8">이론적 기반 및 주요 사상가</h2>
+                        <div class="grid md:grid-cols-3 gap-6 text-center">
+                            <div class="card p-6">
+                                <h3 class="text-xl font-bold text-slate-800 mb-3">라플라스 (Laplace, 1812)</h3>
+                                <p class="text-sm">"이 이론의 도움으로 우리는 건전한 마음이 종종 무의식적으로 느끼는 것을 정확히 이해하게 된다... 우리의 명상에 이보다 더 가치 있는 과학은 없다."</p>
+                            </div>
+                            <div class="card p-6">
+                                <h3 class="text-xl font-bold text-slate-800 mb-3">베이즈 & 베르누이</h3>
+                                <p class="text-sm"><b>베이즈(Bayes, 1763)</b>는 확률의 인식론적 힘을 증명했으며, <b>베르누이(Bernoulli, 1700년대 초)</b>는 위험 감수 태도를 수학적으로 포착함.</p>
+                            </div>
+                            <div class="card p-6">
+                                <h3 class="text-xl font-bold text-slate-800 mb-3">제프리스 & 제인스</h3>
+                                <p class="text-sm"><b>제프리스(Jeffreys)</b>와 <b>제인스(Jaynes)</b>는 확률을 인공물이 아닌, 삶에 대해 추론하는 기본적인 방식으로 간주하여 현대적 해석의 기틀을 마련함.</p>
+                            </div>
+                        </div>
+                        <div class="explanation-box mt-8">
+                            <p>의사결정분석은 단독으로 탄생한 학문이 아님. 확률, 효용, 리스크에 대한 오랜 철학적, 수학적 탐구의 결정체로서, 본 논문은 이러한 지적 유산 위에 서 있음을 강조함.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 5: DA Process -->
+                <div class="slide" data-title="프레임워크">
+                    <div class="slide-content">
+                        <h2 class="section-title text-4xl mb-8">의사결정분석의 프레임워크 (1): 프로세스</h2>
+                        <div class="card p-8">
+                            <div class="flex flex-col md:flex-row items-center justify-around gap-4 text-center">
+                                <div class="p-4">
+                                    <p class="text-lg font-bold">현실의 문제<br>(Opaque)</p>
+                                </div>
+                                <div class="process-arrow">→</div>
+                                <div class="flex-1 p-6 border-2 border-blue-500 bg-blue-50 rounded-lg">
+                                    <p class="font-bold text-xl text-blue-800">공식화 (Formulate)</p>
+                                    <p class="text-sm mt-1">문제 모델링, 의사결정 기준 수립</p>
+                                </div>
+                                <div class="process-arrow">→</div>
+                                <div class="flex-1 p-6 border-2 border-blue-500 bg-blue-50 rounded-lg">
+                                    <p class="font-bold text-xl text-blue-800">평가 (Evaluate)</p>
+                                    <p class="text-sm mt-1">대안 계산 및 최적 대안 도출</p>
+                                </div>
+                                <div class="process-arrow">→</div>
+                                <div class="flex-1 p-6 border-2 border-blue-500 bg-blue-50 rounded-lg">
+                                    <p class="font-bold text-xl text-blue-800">평가/통찰 (Appraise)</p>
+                                    <p class="text-sm mt-1">민감도 분석, 논리적 설득</p>
+                                </div>
+                                <div class="process-arrow">→</div>
+                                <div class="p-4">
+                                    <p class="text-lg font-bold">현실의 행동<br>(Transparent)</p>
+                                </div>
+                            </div>
+                            <div class="text-center mt-6">
+                                <p class="font-bold text-lg">🔄 정제 (Refine): 평가/통찰 단계에서 부족함이 발견되면 다시 공식화 단계로 돌아가 모델을 개선.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 6: Decision Basis -->
+                <div class="slide" data-title="프레임워크">
+                    <div class="slide-content">
+                        <h2 class="section-title text-4xl mb-8">의사결정분석의 프레임워크 (2): 의사결정 기준</h2>
+                        <div class="card p-10 grid md:grid-cols-3 gap-8 text-center">
+                            <div class="p-6 bg-slate-50 rounded-lg">
+                                <p class="text-3xl mb-3">🤔</p>
+                                <h3 class="text-xl font-bold text-slate-800">선택 (Choice)</h3>
+                                <p class="mt-2 text-sm">의사결정자가 직면한 <span class="highlight">대안들</span>은 무엇인가?</p>
+                            </div>
+                             <div class="p-6 bg-slate-50 rounded-lg">
+                                <p class="text-3xl mb-3">ℹ️</p>
+                                <h3 class="text-xl font-bold text-slate-800">정보 (Information)</h3>
+                                <p class="mt-2 text-sm">결과에 영향을 미치는 <span class="highlight">모델, 관계, 확률</span>은 무엇인가?</p>
+                            </div>
+                             <div class="p-6 bg-slate-50 rounded-lg">
+                                <p class="text-3xl mb-3">💖</p>
+                                <h3 class="text-xl font-bold text-slate-800">선호 (Preferences)</h3>
+                                <p class="mt-2 text-sm">결과에 대한 <span class="highlight">가치, 시간, 위험</span> 선호는 무엇인가?</p>
+                            </div>
+                        </div>
+                        <p class="mt-6 text-center text-lg">의사결정분석의 핵심은 이 세 가지 요소를 명확하게 <span class="highlight">도출(Elicitation)</span>하고 종합하는 과정임.</p>
+                    </div>
+                </div>
+                
+                 <!-- Slide 7: Barriers Intro -->
+                <div class="slide" data-title="핵심 장벽과 해결책">
+                    <div class="slide-content text-center">
+                        <h2 class="section-title text-5xl mb-8">핵심 장벽과 개념적 해결책</h2>
+                        <p class="text-2xl text-slate-600">의사결정분석의 보급을 가로막는 장벽들과<br>Howard가 제시하는 개념적, 기술적 돌파구</p>
+                    </div>
+                </div>
+
+
+                <!-- Slide 8: Barrier 1 - Conceptual Clarity -->
+                <div class="slide" data-title="핵심 장벽과 해결책">
+                    <div class="slide-content">
+                        <h2 class="section-title text-4xl mb-8">장벽 1: 개념적 혼란 → 해결책: 규범적 관점의 확립</h2>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="card p-8">
+                                <h3 class="text-2xl font-bold text-slate-800 mb-4">기술적 모델 (Descriptive)</h3>
+                                <ul class="list-disc list-outside pl-5 space-y-3">
+                                    <li>"세상은 어떠한가?"를 판단 없이 묘사함.</li>
+                                    <li>자연과학, 인간의 실제 행동 패턴 등이 해당.</li>
+                                    <li>예: "나는 종종 산수 계산에서 실수를 한다." (실제 현상)</li>
+                                </ul>
+                            </div>
+                            <div class="card p-8 bg-indigo-800 text-white">
+                                <h3 class="text-2xl font-bold mb-4">규범적 모델 (Normative)</h3>
+                                 <ul class="list-disc list-outside pl-5 space-y-3">
+                                      <li>"세상은 어떠해야 하는가?"에 대한 당위성을 제시함.</li>
+                                      <li>법률, 논리학, 의사결정분석 등이 해당.</li>
+                                      <li>예: "나는 산수의 규칙을 따라야 한다." (따라야 할 기준)</li>
+                                 </ul>
+                            </div>
+                        </div>
+                         <div class="critical-view mt-8">
+                            <h3 class="text-xl font-bold text-orange-800 mb-2">저자의 주장</h3>
+                            <p>"의사결정분석은 <span class="highlight">의사결정의 규범적 실천</span>이다. 규범적 이론과 기술적 이론을 모두 갖춘 이론이 있다면, 우리에겐 이론이 전혀 필요 없을 것이다. 호흡처럼 자연스러운 과정이라면 왜 규범 이론이 필요하겠는가?"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 9: Barrier 2 - Scope & Quality -->
+                <div class="slide" data-title="핵심 장벽과 해결책">
+                    <div class="slide-content">
+                        <h2 class="section-title text-4xl mb-8">장벽 2-1: 범위와 품질의 문제 → 해결책: 체계적 도구 활용</h2>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="card p-8">
+                                <h3 class="text-2xl font-bold text-slate-800 mb-4">문제 프레이밍 (Framing)</h3>
+                                 <ul class="list-disc list-outside pl-5 space-y-3">
+                                      <li>"엉뚱한 문제를 푸는 오류"를 피하는 과정.</li>
+                                      <li>의사결정분석에서 가장 어렵고 인간적인 통찰이 요구되는 부분.</li>
+                                 </ul>
+                            </div>
+                             <div class="card p-8">
+                                <h3 class="text-2xl font-bold text-slate-800 mb-4">대안 창출: 전략 생성 테이블</h3>
+                                 <ul class="list-disc list-outside pl-5 space-y-3">
+                                      <li>여러 의사결정 영역의 조합을 통해 전체 전략 대안을 구성.</li>
+                                      <li>의미 있는 <span class="highlight">'전략 테마'</span>를 중심으로 핵심 대안을 도출.</li>
+                                 </ul>
+                            </div>
+                             <div class="card p-8 col-span-2">
+                                <h3 class="text-2xl font-bold text-slate-800 mb-4">의사결정 품질 (Decision Quality)</h3>
+                                 <p>단순 분석을 넘어, 내용적 품질까지 책임지는 '의사결정 컨설팅'의 개념. (품질 요소: 올바른 프레이밍, 정보의 탁월성, 창의적 대안, 명확한 가치, 논리적 통합 등)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 10: Strategy Generation Table -->
+                <div class="slide" data-title="핵심 장벽과 해결책">
+                    <div class="slide-content">
+                        <h2 class="section-title text-4xl mb-8">장벽 2-2: 범위와 품질 → 해결책: 전략 생성 테이블</h2>
+                        <div class="card p-8">
+                            <table class="w-full text-sm text-left text-slate-500">
+                                <thead class="text-xs text-slate-700 uppercase bg-slate-100">
+                                    <tr>
+                                        <th scope="col" class="py-3 px-2">전략 테마</th>
+                                        <th scope="col" class="py-3 px-2">Utility</th>
+                                        <th scope="col" class="py-3 px-2">E&P</th>
+                                        <th scope="col" class="py-3 px-2">Oilfield Services</th>
+                                        <th scope="col" class="py-3 px-2">Forest Products</th>
+                                        <th scope="col" class="py-3 px-2">Coal</th>
+                                        <th scope="col" class="py-3 px-2">Acquisition</th>
+                                        <th scope="col" class="py-3 px-2">Dividends</th>
+                                        <th scope="col" class="py-3 px-2">Debt/Equity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="bg-white border-b">
+                                        <td class="py-2 px-2 font-bold">Baseline</td>
+                                        <td class="py-2 px-2">Aggressive Supply Buildup</td>
+                                        <td class="py-2 px-2">Increase Exploration Budget</td>
+                                        <td class="py-2 px-2">Aggressive Expansion and R&D</td>
+                                        <td class="py-2 px-2">Hold-Improve Earnings</td>
+                                        <td class="py-2 px-2">Purchase Additional Reserves</td>
+                                        <td class="py-2 px-2">None</td>
+                                        <td class="py-2 px-2">70%</td>
+                                        <td class="py-2 px-2">1/1</td>
+                                    </tr>
+                                    <tr class="bg-white border-b">
+                                        <td class="py-2 px-2 font-bold text-indigo-700">Service Business</td>
+                                        <td class="py-2 px-2 bg-indigo-50">Hold/Restricted Investment</td>
+                                        <td class="py-2 px-2">Sell/Milk</td>
+                                        <td class="py-2 px-2 bg-indigo-50">Modest Expansion</td>
+                                        <td class="py-2 px-2">Add Timber-lands</td>
+                                        <td class="py-2 px-2 bg-indigo-50">Joint Venture Synfuels</td>
+                                        <td class="py-2 px-2">Service Business</td>
+                                        <td class="py-2 px-2 bg-indigo-50">50%</td>
+                                        <td class="py-2 px-2">1.5/1</td>
+                                    </tr>
+                                    <tr class="bg-white border-b">
+                                       <td class="py-2 px-2 font-bold">Resource Acquisition</td>
+                                        <td class="py-2 px-2"></td>
+                                        <td class="py-2 px-2">$800M Investment</td>
+                                        <td class="py-2 px-2"></td>
+                                        <td class="py-2 px-2"></td>
+                                        <td class="py-2 px-2"></td>
+                                        <td class="py-2 px-2">Resource Business</td>
+                                        <td class="py-2 px-2"></td>
+                                        <td class="py-2 px-2"></td>
+                                    </tr>
+                                     <tr class="bg-white border-b">
+                                        <td class="py-2 px-2 font-bold">P/L Emphasis</td>
+                                        <td class="py-2 px-2"></td>
+                                        <td class="py-2 px-2"></td>
+                                        <td class="py-2 px-2">Hold</td>
+                                        <td class="py-2 px-2">Sell</td>
+                                        <td class="py-2 px-2">Hold</td>
+                                        <td class="py-2 px-2">P/L</td>
+                                        <td class="py-2 px-2">25%</td>
+                                        <td class="py-2 px-2">2/1</td>
+                                    </tr>
+                                     <tr class="bg-white">
+                                        <td class="py-2 px-2 font-bold">Gradual Liquidation</td>
+                                        <td class="py-2 px-2">Severe Capital Constraint</td>
+                                        <td class="py-2 px-2"></td>
+                                        <td class="py-2 px-2">Milk</td>
+                                        <td class="py-2 px-2"></td>
+                                        <td class="py-2 px-2">Milk</td>
+                                        <td class="py-2 px-2"></td>
+                                        <td class="py-2 px-2">0%</td>
+                                        <td class="py-2 px-2"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="explanation-box">
+                                <h4 class="font-bold text-sky-800">활용법</h4>
+                                <p>전략 생성 테이블은 여러 <span class="highlight">의사결정 영역(열)</span>에서 가능한 <span class="highlight">선택지(행)</span>들을 조합하여, 의미 있는 <span class="highlight">'전략 테마'</span>를 도출하는 데 사용함. 이 표는 복잡하게 얽힌 선택들을 체계적으로 구조화하여 창의적이고 실행 가능한 전체 전략 대안을 발굴하도록 도움.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Slide 11: Barrier 3 - Skill & Efficiency -->
+                <div class="slide" data-title="핵심 장벽과 해결책">
+                    <div class="slide-content">
+                        <h2 class="section-title text-4xl mb-8">장벽 3: 기술과 효율성 → 해결책: 새로운 도구의 발전</h2>
+                        <div class="grid md:grid-cols-2 gap-8">
+                             <div class="card p-8">
+                                <h3 class="text-2xl font-bold text-slate-800 mb-4">영향 다이어그램 (Influence Diagram)</h3>
+                                 <ul class="list-disc list-outside pl-5 space-y-3">
+                                      <li><blockquote class="border-l-4 border-slate-300 pl-4 italic text-slate-600">"내가 본 것 중 인간 지식의 <span class="highlight">소통, 도출, 상세한 표현</span>에서 가장 위대한 진보"</blockquote></li>
+                                      <li>의사결정자와 분석가 간의 다리 역할을 함.</li>
+                                 </ul>
+                            </div>
+                            <div class="card p-8">
+                                <h3 class="text-2xl font-bold text-slate-800 mb-4">명확성 검사 (Clarity Test)</h3>
+                                 <ul class="list-disc list-outside pl-5 space-y-3">
+                                      <li>"전지전능한 존재가 답할 수 있는가?"로 변수의 모호함을 제거.</li>
+                                      <li>예: '기술적 성공' (모호) → '조건 Y에서 X시간 동안 실패 없이 작동' (명확)</li>
+                                 </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 12: Corporate Risk Tolerance -->
+                <div class="slide" data-title="핵심 장벽과 해결책">
+                    <div class="slide-content">
+                        <h2 class="section-title text-4xl mb-8">실용적 적용: 기업의 위험 감수성(Risk Tolerance)</h2>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="card p-6">
+                                <h3 class="text-lg font-bold text-slate-800 mb-2">기업 재무 지표와 위험 감수성 ($ millions)</h3>
+                                <table class="w-full text-sm text-left">
+                                    <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                                        <tr><th class="py-2 px-2">Company</th><th class="py-2 px-2">Net Sales</th><th class="py-2 px-2">Net Income</th><th class="py-2 px-2">Equity</th><th class="py-2 px-2">Risk Tolerance</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b"> <td class="py-1 px-2">A</td> <td class="py-1 px-2">2,300</td> <td class="py-1 px-2">120</td> <td class="py-1 px-2">1,000</td> <td class="py-1 px-2 font-bold">150</td> </tr>
+                                        <tr class="border-b"> <td class="py-1 px-2">B</td> <td class="py-1 px-2">16,000</td> <td class="py-1 px-2">700</td> <td class="py-1 px-2">6,500</td> <td class="py-1 px-2 font-bold">1,000</td> </tr>
+                                        <tr> <td class="py-1 px-2">C</td> <td class="py-1 px-2">31,000</td> <td class="py-1 px-2">1,900</td> <td class="py-1 px-2">12,000</td> <td class="py-1 px-2 font-bold">2,000</td> </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                             <div class="card p-6">
+                                <h3 class="text-lg font-bold text-slate-800 mb-2">위험 감수성 비율의 일관성</h3>
+                                <table class="w-full text-sm text-left">
+                                    <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                                        <tr><th class="py-2 px-2">Ratio</th><th class="py-2 px-2">A</th><th class="py-2 px-2">B</th><th class="py-2 px-2">C</th><th class="py-2 px-2">Average</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b"> <td class="py-1 px-2">RT/Sales</td> <td class="py-1 px-2">6.5%</td> <td class="py-1 px-2">6.3%</td> <td class="py-1 px-2">6.5%</td> <td class="py-1 px-2 font-bold">6.4%</td> </tr>
+                                        <tr class="border-b"> <td class="py-1 px-2">RT/Income</td> <td class="py-1 px-2">1.25</td> <td class="py-1 px-2">1.43</td> <td class="py-1 px-2">1.05</td> <td class="py-1 px-2 font-bold">1.24</td> </tr>
+                                        <tr> <td class="py-1 px-2">RT/Equity</td> <td class="py-1 px-2">15.0%</td> <td class="py-1 px-2">15.4%</td> <td class="py-1 px-2">16.7%</td> <td class="py-1 px-2 font-bold">15.7%</td> </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="critical-view mt-6">
+                            <h3 class="text-xl font-bold text-orange-800 mb-2">시사점</h3>
+                            <p>기업의 위험 감수성은 임의적인 것이 아님. 실제 데이터 분석 결과, <span class="highlight">매출액, 순이익, 자본총계</span>와 같은 재무 지표와 놀랍도록 일관된 비율을 보임. 이는 특정 산업 내에서 기업의 위험 선호를 설정하는 데 실용적인 가이드라인을 제공할 수 있음을 시사함.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 13: Future Promise - Intelligent Decision Systems -->
+                <div class="slide" data-title="미래">
+                    <div class="slide-content">
+                        <h2 class="section-title text-4xl mb-8">미래의 약속: 지능형 의사결정 시스템</h2>
+                        <div class="grid md:grid-cols-2 gap-8">
+                             <div class="card p-8">
+                                <h3 class="text-2xl font-bold text-slate-800 mb-4">전문가 시스템 (Expert System)</h3>
+                                 <ul class="list-disc list-outside pl-5 space-y-3">
+                                      <li>인간 전문가의 의사결정 규칙을 모방하는 <span class="highlight">기술적(Descriptive)</span> 시스템.</li>
+                                      <li>추천의 질이 전문가의 수준을 넘어설 수 없음. 규범적 힘이 없음.</li>
+                                 </ul>
+                            </div>
+                             <div class="card p-8 bg-indigo-800 text-white">
+                                <h3 class="text-2xl font-bold mb-4">지능형 의사결정 시스템 (IDS)</h3>
+                                 <ul class="list-disc list-outside pl-5 space-y-3">
+                                      <li>의사결정'분석' 전문가의 규칙을 시스템화.</li>
+                                      <li>특정 문제에 맞춰 '의사결정 모델' 자체를 구축, 평가, 설명하는 <span class="highlight">규범적(Normative)</span> 시스템.</li>
+                                      <li>전문가의 행동을 모방하는 것이 아니라, 의사결정자에게 최적화된 추천을 제공.</li>
+                                 </ul>
+                            </div>
+                        </div>
+                        <p class="mt-8 text-center text-xl font-bold">IDS는 전문가 시스템의 효율성과 의사결정분석의 규범적 힘을 결합하여, <span class="highlight">더 많은 사람들에게 저렴한 비용으로 DA의 혜택을 제공</span>하는 것을 약속함.</p>
+                    </div>
+                </div>
+                
+                <!-- Slide 14: Implications -->
+                <div class="slide" data-title="결론 및 시사점">
+                    <div class="slide-content">
+                        <h2 class="section-title text-4xl mb-8">시사점 (Implications)</h2>
+                        <div class="grid md:grid-cols-3 gap-6">
+                            <div class="card p-6 h-full">
+                                <p class="text-3xl mb-3">🧑‍💼</p><p class="font-extrabold text-lg text-indigo-800 mb-2">의사결정자를 위해</p>
+                                <p class="text-sm">결과가 나쁘다고 결정이 나빴던 것은 아니다. '결정'과 '결과'를 분리하고, 직관보다 규범적 프로세스를 신뢰해야 한다.</p>
+                            </div>
+                            <div class="card p-6 h-full">
+                                <p class="text-3xl mb-3">🏢</p><p class="font-extrabold text-lg text-indigo-800 mb-2">조직을 위해</p>
+                                <p class="text-sm">명시적이고 투명한 의사결정 문화를 장려하고, 단순 분석을 넘어 '의사결정 품질' 자체를 관리하는 프로세스를 도입해야 한다.</p>
+                            </div>
+                            <div class="card p-6 h-full">
+                                <p class="text-3xl mb-3">🔬</p><p class="font-extrabold text-lg text-indigo-800 mb-2">연구자를 위해</p>
+                                <p class="text-sm">인간의 행동을 묘사하는 데 그치지 말고, 더 나은 결정을 돕는 규범적 도구와 시스템(특히 IDS) 개발에 집중해야 한다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 15: Conclusion -->
+                <div class="slide" data-title="결론 및 시사점">
+                       <div class="slide-content">
+                            <h2 class="section-title text-4xl mb-8">결론</h2>
+                            <div class="card p-12">
+                                <ul class="space-y-6 text-xl">
+                                    <li class="flex items-start">
+                                        <span class="text-green-500 font-bold mr-4 text-2xl">✓</span>
+                                        <div><strong class="text-slate-900">입증된 가치:</strong> 의사결정분석은 불투명한 문제를 투명하게 만들어, 명확한 행동을 이끌어내는 강력한 힘을 이미 증명했음.</div>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-blue-500 font-bold mr-4 text-2xl">✓</span>
+                                        <div><strong class="text-slate-900">지속적인 발전:</strong> 영향 다이어그램, 의사결정 품질, 지능형 시스템 등 개념, 기술, 효율성 측면에서 끊임없이 발전하고 있음.</div>
+                                    </li>
+                                     <li class="flex items-start">
+                                        <span class="text-indigo-600 font-bold mr-4 text-2xl">✓</span>
+                                        <div><strong class="text-slate-900">새로운 도전과 약속:</strong> 새로운 도전은 이 강력한 도구를 <span class="highlight">모든 사람이 합리적인 비용으로 사용할 수 있도록 보급</span>하는 것이며, 지능형 의사결정 시스템이 그 약속을 실현할 열쇠임.</div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                </div>
+            </div>
+
+            <button id="prev-btn" class="nav-button">&#x276E;</button>
+            <button id="next-btn" class="nav-button">&#x276F;</button>
+            
+            <div class="progress-indicator">
+                <div id="slide-number" class="slide-number"></div>
+                <div class="progress-bar-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const sliderContainer = document.getElementById('slider-container');
+    const slides = document.querySelectorAll('.slide');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const slideNumberDisplay = document.getElementById('slide-number');
+    const progressBar = document.getElementById('progress-bar');
+    const sidebarNav = document.getElementById('sidebar-nav');
+    
+    let currentSlide = 0;
+    const totalSlides = slides.length;
+
+    const navMap = [];
+    let lastTitle = "";
+    slides.forEach((slide, i) => {
+        const title = slide.dataset.title;
+        if (title !== lastTitle) {
+            navMap.push({ title: title, index: i });
+            lastTitle = title;
+        }
+    });
+
+    navMap.forEach(item => {
+        const link = document.createElement('a');
+        link.href = "#";
+        link.textContent = item.title;
+        link.dataset.index = item.index;
+        sidebarNav.appendChild(link);
+    });
+
+    const sidebarLinks = document.querySelectorAll('#sidebar-nav a');
+
+    function updateSlidePosition() {
+        sliderContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
+        
+        slides.forEach((slide, index) => {
+            if(index === currentSlide) {
+                slide.classList.add('active');
+            } else {
+                slide.classList.remove('active');
+            }
+        });
+
+        const progress = ((currentSlide + 1) / totalSlides) * 100;
+        progressBar.style.width = `${progress}%`;
+        slideNumberDisplay.textContent = `${currentSlide + 1} / ${totalSlides}`;
+        
+        prevBtn.style.display = currentSlide === 0 ? 'none' : 'flex';
+        nextBtn.style.display = currentSlide === totalSlides - 1 ? 'none' : 'flex';
+        
+        const currentTitle = slides[currentSlide].dataset.title;
+        sidebarLinks.forEach(link => {
+            if (link.textContent === currentTitle) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    }
+    
+    function goToSlide(slideIndex) {
+        currentSlide = slideIndex;
+        updateSlidePosition();
+    }
+
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const slideIndex = parseInt(link.dataset.index);
+            goToSlide(slideIndex);
+        });
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentSlide < totalSlides - 1) {
+            currentSlide++;
+            updateSlidePosition();
+        }
+    });
+
+    prevBtn.addEventListener('click', () => {
+        if (currentSlide > 0) {
+            currentSlide--;
+            updateSlidePosition();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' && currentSlide < totalSlides - 1) {
+            currentSlide++;
+            updateSlidePosition();
+        } else if (e.key === 'ArrowLeft' && currentSlide > 0) {
+            currentSlide--;
+            updateSlidePosition();
+        }
+    });
+
+    updateSlidePosition();
+});
+</script>
+
+</body>
+</html>
+
