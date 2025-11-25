@@ -8,10 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Professional Blue & Gray -->
-    <!-- Application Structure Plan: The application is structured as a horizontal, slide-based presentation, ideal for a guided, step-by-step academic talk. Navigation is supported by arrow buttons, keyboard controls, and a new left-side hyperlink navigation for direct access to key sections (Intro, Process, Key Concepts, etc.). This hybrid structure combines linear flow with non-linear exploration. -->
-    <!-- Visualization & Content Choices: The content from the "Decision Analysis" paper is structured visually. The core DA process is shown as a flow diagram. The Decision Basis components are broken down into a 3-part visual model. The Strategy Generation Table and Corporate Risk Tolerance tables are recreated as clean HTML tables to present data clearly. The distinction between descriptive and normative models, and expert vs. intelligent systems, are shown using comparison layouts. This visual, structured approach makes Howard's dense, conceptual paper more accessible and digestible. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    
     <style>
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
@@ -23,7 +20,7 @@
             padding: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden;
+            overflow: hidden; /* Prevents scroll during presentation mode */
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #f8fafc; /* slate-50 */
             color: #334155; /* slate-700 */
@@ -43,13 +40,19 @@
             padding: 1.5rem;
             display: flex;
             flex-direction: column;
+            z-index: 50;
         }
         
         .sidebar-title {
             font-weight: 900;
-            color: #1e29b; /* slate-800 */
+            color: #1e293b; /* slate-800 */
             margin-bottom: 2rem;
             line-height: 1.4;
+        }
+
+        .sidebar-nav {
+            flex-grow: 1;
+            overflow-y: auto;
         }
 
         .sidebar-nav a {
@@ -60,6 +63,8 @@
             color: #475569; /* slate-600 */
             transition: all 0.2s ease-in-out;
             border-left: 4px solid transparent;
+            margin-bottom: 0.5rem;
+            text-decoration: none;
         }
         .sidebar-nav a:hover {
             background-color: #f1f5f9; /* slate-100 */
@@ -69,6 +74,24 @@
             background-color: #eef2ff; /* indigo-50 */
             color: #3730a3; /* indigo-800 */
             border-left-color: #4338ca; /* indigo-700 */
+        }
+
+        /* Print Button Style */
+        .print-btn {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background-color: #334155;
+            color: white;
+            text-align: center;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: none;
+            width: 100%;
+        }
+        .print-btn:hover {
+            background-color: #1e293b;
         }
 
         .content-area {
@@ -94,6 +117,7 @@
             align-items: center;
             padding: 2rem 4rem;
             position: relative;
+            box-sizing: border-box;
         }
         
         .slide.active .slide-content {
@@ -107,6 +131,8 @@
             overflow-y: auto;
             padding: 1rem;
         }
+        
+        /* Navigation Controls */
         .nav-button {
             position: absolute;
             top: 50%;
@@ -197,15 +223,90 @@
             transform: translateY(-5px);
             box-shadow: 0 15px 30px rgba(0,0,0,0.1);
         }
+
+        /* --- PRINT STYLES --- */
+        @media print {
+            @page {
+                size: landscape;
+                margin: 0.5cm;
+            }
+
+            /* Force Background Colors */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+
+            /* Hide UI Elements */
+            .sidebar, .nav-button, .progress-indicator, .print-btn {
+                display: none !important;
+            }
+
+            /* Reset Layout for Print Flow */
+            html, body {
+                height: auto !important;
+                overflow: visible !important;
+                background-color: white !important;
+            }
+
+            .main-container {
+                display: block !important;
+                height: auto !important;
+            }
+
+            .content-area {
+                background: none !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            .slider-container {
+                display: block !important;
+                transform: none !important;
+                width: 100% !important;
+                height: auto !important;
+            }
+
+            /* Slide Layout for PDF Page */
+            .slide {
+                display: flex !important;
+                opacity: 1 !important;
+                position: relative !important;
+                width: 100% !important;
+                height: 100vh !important; /* Force full page height per slide */
+                page-break-after: always !important;
+                break-after: page !important;
+                padding: 2rem !important;
+                border-bottom: 1px solid #ddd; /* Separator for debugging, invisible if page break works */
+            }
+
+            .slide-content {
+                opacity: 1 !important;
+                transform: none !important;
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            /* Adjust shadows for print */
+            .card {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="main-container">
         <aside class="sidebar">
             <h1 class="sidebar-title text-xl">Decision Analysis:<br>Practice and Promise</h1>
-            <nav id="sidebar-nav" class="sidebar-nav space-y-2 mt-auto">
+            <nav id="sidebar-nav" class="sidebar-nav space-y-2">
                 <!-- Sidebar links injected by JS -->
             </nav>
+            <!-- Print Button -->
+            <button onclick="window.print()" class="print-btn">
+                🖨️ PDF 저장 / 인쇄
+            </button>
         </aside>
 
         <main class="content-area">
@@ -222,8 +323,8 @@
                                 <p class="font-semibold text-slate-700">과 목 명:</p><p class="text-slate-600">의사결정론</p>
                                 <p class="font-semibold text-slate-700">담당교수:</p><p class="text-slate-600">임성묵 교수님</p>
                                 <p class="font-semibold text-slate-700">발 표 자:</p><p class="text-slate-600">염승빈</p>
-                                <p class="font-semibold text-slate-700">소     속:</p><p class="text-slate-600">인사조직 박사과정 3학기</p>
-                                <p class="font-semibold text-slate-700">학     번:</p><p class="text-slate-600">2025127099</p>
+                                <p class="font-semibold text-slate-700">소      속:</p><p class="text-slate-600">인사조직 박사과정 3학기</p>
+                                <p class="font-semibold text-slate-700">학      번:</p><p class="text-slate-600">2025127099</p>
                             </div>
                         </div>
                     </div>
@@ -245,8 +346,8 @@
                              <div class="card p-8">
                                 <h3 class="text-2xl font-bold text-slate-800 mb-4">핵심 문제 제기</h3>
                                  <ul class="list-disc list-outside pl-5 space-y-3">
-                                      <li>DA의 잠재력에도 불구하고, 왜 중요한 결정에서조차 보편적으로 사용되지 않는가?</li>
-                                      <li>John Maynard Keynes(1964) 인용: "대부분의 긍정적 결정은 정량적 분석의 결과가 아니라, <span class="highlight">자발적 행동 충동인 '야성적 충동(animal spirits)'의 결과</span>로만 내려질 수 있다."</li>
+                                     <li>DA의 잠재력에도 불구하고, 왜 중요한 결정에서조차 보편적으로 사용되지 않는가?</li>
+                                     <li>John Maynard Keynes(1964) 인용: "대부분의 긍정적 결정은 정량적 분석의 결과가 아니라, <span class="highlight">자발적 행동 충동인 '야성적 충동(animal spirits)'의 결과</span>로만 내려질 수 있다."</li>
                                  </ul>
                             </div>
                         </div>
@@ -254,7 +355,7 @@
                 </div>
                 
                 <!-- Slide 3: Research Methodology -->
-                <div class="slide" data-title="서론">
+                <div class="slide" data-title="연구 방법론">
                     <div class="slide-content">
                         <h2 class="section-title text-4xl mb-8">연구 방법론 및 관점</h2>
                         <div class="card p-10">
@@ -297,7 +398,7 @@
                 </div>
 
                 <!-- Slide 5: DA Process -->
-                <div class="slide" data-title="프레임워크">
+                <div class="slide" data-title="DA 프로세스">
                     <div class="slide-content">
                         <h2 class="section-title text-4xl mb-8">의사결정분석의 프레임워크 (1): 프로세스</h2>
                         <div class="card p-8">
@@ -333,7 +434,7 @@
                 </div>
 
                 <!-- Slide 6: Decision Basis -->
-                <div class="slide" data-title="프레임워크">
+                <div class="slide" data-title="의사결정 기준">
                     <div class="slide-content">
                         <h2 class="section-title text-4xl mb-8">의사결정분석의 프레임워크 (2): 의사결정 기준</h2>
                         <div class="card p-10 grid md:grid-cols-3 gap-8 text-center">
@@ -358,7 +459,7 @@
                 </div>
                 
                  <!-- Slide 7: Barriers Intro -->
-                <div class="slide" data-title="핵심 장벽과 해결책">
+                <div class="slide" data-title="핵심 장벽">
                     <div class="slide-content text-center">
                         <h2 class="section-title text-5xl mb-8">핵심 장벽과 개념적 해결책</h2>
                         <p class="text-2xl text-slate-600">의사결정분석의 보급을 가로막는 장벽들과<br>Howard가 제시하는 개념적, 기술적 돌파구</p>
@@ -367,7 +468,7 @@
 
 
                 <!-- Slide 8: Barrier 1 - Conceptual Clarity -->
-                <div class="slide" data-title="핵심 장벽과 해결책">
+                <div class="slide" data-title="장벽 1: 개념">
                     <div class="slide-content">
                         <h2 class="section-title text-4xl mb-8">장벽 1: 개념적 혼란 → 해결책: 규범적 관점의 확립</h2>
                         <div class="grid md:grid-cols-2 gap-8">
@@ -396,7 +497,7 @@
                 </div>
 
                 <!-- Slide 9: Barrier 2 - Scope & Quality -->
-                <div class="slide" data-title="핵심 장벽과 해결책">
+                <div class="slide" data-title="장벽 2: 범위/품질">
                     <div class="slide-content">
                         <h2 class="section-title text-4xl mb-8">장벽 2-1: 범위와 품질의 문제 → 해결책: 체계적 도구 활용</h2>
                         <div class="grid md:grid-cols-2 gap-8">
@@ -423,7 +524,7 @@
                 </div>
 
                 <!-- Slide 10: Strategy Generation Table -->
-                <div class="slide" data-title="핵심 장벽과 해결책">
+                <div class="slide" data-title="전략 생성 테이블">
                     <div class="slide-content">
                         <h2 class="section-title text-4xl mb-8">장벽 2-2: 범위와 품질 → 해결책: 전략 생성 테이블</h2>
                         <div class="card p-8">
@@ -508,7 +609,7 @@
                 </div>
 
                  <!-- Slide 11: Barrier 3 - Skill & Efficiency -->
-                <div class="slide" data-title="핵심 장벽과 해결책">
+                <div class="slide" data-title="장벽 3: 기술/효율">
                     <div class="slide-content">
                         <h2 class="section-title text-4xl mb-8">장벽 3: 기술과 효율성 → 해결책: 새로운 도구의 발전</h2>
                         <div class="grid md:grid-cols-2 gap-8">
@@ -531,7 +632,7 @@
                 </div>
 
                 <!-- Slide 12: Corporate Risk Tolerance -->
-                <div class="slide" data-title="핵심 장벽과 해결책">
+                <div class="slide" data-title="실용: 위험 감수성">
                     <div class="slide-content">
                         <h2 class="section-title text-4xl mb-8">실용적 적용: 기업의 위험 감수성(Risk Tolerance)</h2>
                         <div class="grid md:grid-cols-2 gap-8">
@@ -570,7 +671,7 @@
                 </div>
                 
                 <!-- Slide 13: Future Promise - Intelligent Decision Systems -->
-                <div class="slide" data-title="미래">
+                <div class="slide" data-title="미래: IDS">
                     <div class="slide-content">
                         <h2 class="section-title text-4xl mb-8">미래의 약속: 지능형 의사결정 시스템</h2>
                         <div class="grid md:grid-cols-2 gap-8">
@@ -595,7 +696,7 @@
                 </div>
                 
                 <!-- Slide 14: Implications -->
-                <div class="slide" data-title="결론 및 시사점">
+                <div class="slide" data-title="시사점">
                     <div class="slide-content">
                         <h2 class="section-title text-4xl mb-8">시사점 (Implications)</h2>
                         <div class="grid md:grid-cols-3 gap-6">
@@ -616,8 +717,8 @@
                 </div>
                 
                 <!-- Slide 15: Conclusion -->
-                <div class="slide" data-title="결론 및 시사점">
-                       <div class="slide-content">
+                <div class="slide" data-title="결론">
+                        <div class="slide-content">
                             <h2 class="section-title text-4xl mb-8">결론</h2>
                             <div class="card p-12">
                                 <ul class="space-y-6 text-xl">
@@ -755,4 +856,3 @@ document.addEventListener('DOMContentLoaded', function () {
 
 </body>
 </html>
-
